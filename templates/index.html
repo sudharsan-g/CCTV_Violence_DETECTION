@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #video-player {
+        width: 1000px;
+        height: 600px;
+      }
+  
+    </style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />    
+  </head>
+  <body>
+    <div style="background-image:url(https://wallpaper-mania.com/wp-content/uploads/2018/09/High_resolution_wallpaper_background_ID_77700321993.jpg);">
+    <div class="container"style="background-color: white;">
+    <h1 style="text-align: center;">Violence Classification </h1><br><br>
+    <h5>The Dataset comprises of Three classes </h5>
+    <ul>
+      <li>Violence (246)</li>
+      <li>Non-Violence (112)</li>
+      <li>Weapon-Violence (124)</li>
+    </ul>
+    <h5> The Dataset is trained and tested with different classification models </h5>
+    <br>
+
+    <table class="table"style="width: 50%;margin-left:200px">
+      <thead class="thead-dark" >
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Models</th>
+          <th scope="col">Accuracy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">1</th>
+          <td>Random Forest</td>
+          <td>0.98</td>
+        </tr>
+        <tr>
+          <th scope="row">2</th>
+          <td>Decision Tree</td>
+          <td>0.90</td>
+        </tr>
+        <tr>
+          <th scope="row">3</th>
+          <td>GradientBoost</td>
+          <td>0.99</td>
+        </tr>
+        <tr>
+          <th scope="row">4</th>
+          <td>XgBoost</td>
+          <td>0.99</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+
+
+
+
+
+  
+    <h5> The model used is XgBoost</h5>
+    <br>
+    <video id="video-player" controls style="margin-left: 50px;"></video>
+    
+    <form style="margin-left: 50px;">
+      <br>
+        <input type="file" id="input-file"><br><br>
+        <div style="text-align: center;">
+          <div>
+            <h1 id="result"></h1>
+          </div>
+          
+          <button>Submit</button>
+        </div>
+        
+    
+
+    </form>
+  </div>
+</div>  
+
+
+
+    <script>
+        const inputFile = document.querySelector('input[type=file]');
+        const videoPlayer = document.getElementById("video-player");
+        const form = document.forms[0]
+        const result_para = document.getElementById('result')
+
+        const toBase = async (file) => {
+            let result_base64 = await new Promise((resolve) => {
+                let fileReader = new FileReader();
+                fileReader.onload = () => resolve(fileReader.result);
+                fileReader.readAsDataURL(file);
+            })
+            return result_base64
+        }
+
+        form.addEventListener('submit', async e => {
+            e.preventDefault()
+            const file = inputFile.files[0]
+            const base64 = (await toBase(file))
+            videoPlayer.src = base64
+            const data = base64.split('base64,')[1]
+            
+
+            const _ = await fetch('/v', {
+                method: 'POST',
+                body: JSON.stringify({data:data}),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+            })
+
+            const res = await _.json()
+            const {violence, length, predicted} = res
+            
+            let v = "Non-Violence"
+            if(violence === 1){
+              v = "Violence"
+            }
+            if(violence === 2){
+              v = "Weapon Violence"
+            }
+
+            result_para.textContent = v
+        })
+
+    </script>
+  </body>
+</html>
